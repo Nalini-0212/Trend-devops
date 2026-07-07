@@ -1,10 +1,16 @@
-data aws_ami "ubuntu" {
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["ubuntu"]
+
+  owners = ["099720109477"]
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
@@ -21,6 +27,7 @@ resource "aws_vpc" "my_vpc" {
 resource "aws_subnet" "public_subnet" {
   vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.0/24"
+  map_public_ip_on_launch = true
   availability_zone = "ap-south-1a"
   tags = {
     Name = "public-subnet"
