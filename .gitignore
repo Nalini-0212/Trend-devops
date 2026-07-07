@@ -1,0 +1,33 @@
+*.swp
+*.log
+*.tmp
+coverage/
+.vscode/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Environment Files
+.env
+
+# Jenkins
+workspace/
+
+# Kubernetes Secrets
+*.secret.yaml
+
+# Misc
+*.bak
