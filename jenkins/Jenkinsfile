@@ -153,9 +153,9 @@ pipeline {
                     echo "========== APPLY MANIFESTS =========="
 
                     sh '''
-                    kubectl apply -f k8s/namespace.yaml
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
+                    kubectl apply -f k8s/namespace.yml
+                    kubectl apply -f k8s/deployment.yml
+                    kubectl apply -f k8s/service.yml
                     '''
                 }
             }
