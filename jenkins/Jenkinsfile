@@ -1,0 +1,248 @@
+pipeline {
+
+    agent any
+
+    environment {
+        DOCKER_REPO = "naliniselv/trend"
+        AWS_REGION = "ap-south-1"
+        CLUSTER_NAME = "trend-cluster"
+        NAMESPACE = "trend"
+    }
+
+    stages {
+
+        stage('Checkout Repository') {
+            steps {
+
+                echo "========== CHECKOUT REPOSITORY =========="
+
+                git branch: 'main',
+                    url: 'https://github.com/<your-github-username>/Trend.git'
+            }
+        }
+
+        stage('Generate Version & Image') {
+            steps {
+                script {
+
+                    env.VERSION = "v1.${BUILD_NUMBER}"
+                    env.IMAGE = "${DOCKER_REPO}:${VERSION}"
+
+                    echo "Version : ${VERSION}"
+                    echo "Image   : ${IMAGE}"
+                }
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+
+                echo "========== DOCKER LOGIN =========="
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhubcred',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+
+                    sh '''
+                    echo "$DOCKER_PASSWORD" | docker login \
+                    -u "$DOCKER_USERNAME" \
+                    --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+
+                echo "========== BUILD IMAGE =========="
+
+                sh """
+                docker build \
+                -f docker/Dockerfile \
+                -t ${IMAGE} .
+                """
+                
+                sh """
+                docker tag ${IMAGE} ${DOCKER_REPO}:latest
+                """
+
+            }
+        }
+
+        stage('Validate Application On Port 3000') {
+            steps {
+
+                echo "========== VALIDATE APPLICATION =========="
+
+                sh """
+                docker run -d \
+                --name trend-test \
+                -p 3000:80 \
+                ${IMAGE}
+
+                sleep 20
+
+                curl -I http://localhost:3000
+
+                docker rm -f trend-test
+                """
+            }
+        }
+
+        stage('Push Image To Docker Hub') {
+            steps {
+
+                echo "========== PUSH IMAGE =========="
+
+                sh """
+                docker push ${IMAGE}
+                docker push ${DOCKER_REPO}:latest
+                """
+            }
+        }
+
+        stage('Configure EKS') {
+            steps {
+
+                echo "========== CONFIGURE KUBECONFIG =========="
+
+                sh """
+                aws eks update-kubeconfig \
+                --region ${AWS_REGION} \
+                --name ${CLUSTER_NAME}
+                """
+            }
+        }
+
+        stage('Verify EKS Cluster') {
+            steps {
+
+                echo "========== VERIFY EKS =========="
+
+                sh '''
+                aws sts get-caller-identity
+
+                kubectl get nodes
+
+                kubectl get namespaces
+                '''
+            }
+        }
+
+        stage('Deploy Kubernetes Manifests') {
+            steps {
+
+                echo "========== APPLY MANIFESTS =========="
+
+                sh '''
+                kubectl apply -f k8s/namespace.yaml
+                kubectl apply -f k8s/deployment.yaml
+                kubectl apply -f k8s/service.yaml
+                '''
+            }
+        }
+
+        stage('Deploy Latest Image') {
+            steps {
+
+                echo "========== UPDATE DEPLOYMENT IMAGE =========="
+
+                sh """
+                kubectl set image \
+                deployment/trend-deployment \
+                trend-app=${IMAGE} \
+                -n ${NAMESPACE}
+                """
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+
+                echo "========== VERIFY DEPLOYMENT =========="
+
+                sh """
+                kubectl rollout status \
+                deployment/trend-deployment \
+                -n ${NAMESPACE} \
+                --timeout=5m
+
+                kubectl get deployments \
+                -n ${NAMESPACE}
+
+                kubectl get pods \
+                -n ${NAMESPACE}
+
+                kubectl get svc \
+                -n ${NAMESPACE}
+
+                kubectl describe deployment \
+                trend-deployment \
+                -n ${NAMESPACE}
+                """
+            }
+        }
+
+        stage('Get LoadBalancer Details') {
+            steps {
+
+                echo "========== LOAD BALANCER DETAILS =========="
+
+                sh """
+                sleep 60
+
+                kubectl get svc \
+                trend-service \
+                -n ${NAMESPACE} \
+                -o wide
+
+                kubectl describe svc \
+                trend-service \
+                -n ${NAMESPACE}
+                """
+            }
+        }
+    }
+
+    post {
+
+        always {
+
+            echo "========== CLEANUP =========="
+
+            sh '''
+            docker logout || true
+
+            docker rm -f trend-test || true
+
+            docker image prune -af || true
+
+            docker container prune -f || true
+
+            docker volume prune -f || true
+            '''
+
+            cleanWs()
+        }
+
+        success {
+
+            echo "======================================"
+            echo "PIPELINE EXECUTED SUCCESSFULLY"
+            echo "IMAGE : ${IMAGE}"
+            echo "======================================"
+        }
+
+        failure {
+
+            echo "======================================"
+            echo "PIPELINE EXECUTION FAILED"
+            echo "======================================"
+        }
+    }
+}
