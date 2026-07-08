@@ -17,7 +17,7 @@ pipeline {
                 echo "========== CHECKOUT REPOSITORY =========="
 
                 git branch: 'main',
-                    url: 'https://github.com/<your-github-username>/Trend.git'
+                    url: 'https://github.com/Nalini-0212/Trend-devops.git'
             }
         }
 
