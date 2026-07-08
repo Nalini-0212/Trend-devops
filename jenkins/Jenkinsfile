@@ -187,7 +187,7 @@ pipeline {
                      credentialsId: 'aws-creds']
                 ]) {
 
-                    echo "========== VERIFY DEPLOYMENT ==========="
+                    echo "========== VERIFY DEPLOYMENT ============"
 
                     sh """
                     kubectl rollout status \
