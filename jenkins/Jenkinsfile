@@ -3,17 +3,16 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REPO = "naliniselv/trend"
-        AWS_REGION = "ap-south-1"
+        DOCKER_REPO  = "naliniselv/trend"
+        AWS_REGION   = "ap-south-1"
         CLUSTER_NAME = "trend-cluster"
-        NAMESPACE = "trend"
+        NAMESPACE    = "trend"
     }
 
     stages {
 
         stage('Checkout Repository') {
             steps {
-
                 echo "========== CHECKOUT REPOSITORY =========="
 
                 git branch: 'main',
@@ -24,7 +23,6 @@ pipeline {
         stage('Generate Version & Image') {
             steps {
                 script {
-
                     env.VERSION = "v1.${BUILD_NUMBER}"
                     env.IMAGE = "${DOCKER_REPO}:${VERSION}"
 
@@ -66,11 +64,10 @@ pipeline {
                 -f docker/Dockerfile \
                 -t ${IMAGE} .
                 """
-                
+
                 sh """
                 docker tag ${IMAGE} ${DOCKER_REPO}:latest
                 """
-
             }
         }
 
@@ -110,103 +107,130 @@ pipeline {
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-creds']]) {
-                        sh """
-                        aws sts get-caller-identity
-                        aws eks update-kubeconfig \
+                     credentialsId: 'aws-creds']
+                ]) {
+
+                    echo "========== CONFIGURE EKS =========="
+
+                    sh """
+                    aws sts get-caller-identity
+
+                    aws eks update-kubeconfig \
                         --region ${AWS_REGION} \
                         --name ${CLUSTER_NAME}
-                        """
+                    """
+                }
+            }
         }
-    }
-}
 
         stage('Verify EKS Cluster') {
             steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-creds']
+                ]) {
 
-                echo "========== VERIFY EKS =========="
+                    echo "========== VERIFY EKS =========="
 
-                sh '''
-                aws sts get-caller-identity
+                    sh '''
+                    aws sts get-caller-identity
 
-                kubectl get nodes
+                    kubectl get nodes
 
-                kubectl get namespaces
-                '''
+                    kubectl get namespaces
+                    '''
+                }
             }
         }
 
         stage('Deploy Kubernetes Manifests') {
             steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-creds']
+                ]) {
 
-                echo "========== APPLY MANIFESTS =========="
+                    echo "========== APPLY MANIFESTS =========="
 
-                sh '''
-                kubectl apply -f k8s/namespace.yaml
-                kubectl apply -f k8s/deployment.yaml
-                kubectl apply -f k8s/service.yaml
-                '''
+                    sh '''
+                    kubectl apply -f k8s/namespace.yaml
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                    '''
+                }
             }
         }
 
         stage('Deploy Latest Image') {
             steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-creds']
+                ]) {
 
-                echo "========== UPDATE DEPLOYMENT IMAGE =========="
+                    echo "========== UPDATE DEPLOYMENT IMAGE =========="
 
-                sh """
-                kubectl set image \
-                deployment/trend-deployment \
-                trend-app=${IMAGE} \
-                -n ${NAMESPACE}
-                """
+                    sh """
+                    kubectl set image \
+                        deployment/trend-deployment \
+                        trend-app=${IMAGE} \
+                        -n ${NAMESPACE}
+                    """
+                }
             }
         }
 
         stage('Verify Deployment') {
             steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-creds']
+                ]) {
 
-                echo "========== VERIFY DEPLOYMENT =========="
+                    echo "========== VERIFY DEPLOYMENT =========="
 
-                sh """
-                kubectl rollout status \
-                deployment/trend-deployment \
-                -n ${NAMESPACE} \
-                --timeout=5m
+                    sh """
+                    kubectl rollout status \
+                        deployment/trend-deployment \
+                        -n ${NAMESPACE} \
+                        --timeout=5m
 
-                kubectl get deployments \
-                -n ${NAMESPACE}
+                    kubectl get deployments -n ${NAMESPACE}
 
-                kubectl get pods \
-                -n ${NAMESPACE}
+                    kubectl get pods -n ${NAMESPACE}
 
-                kubectl get svc \
-                -n ${NAMESPACE}
+                    kubectl get svc -n ${NAMESPACE}
 
-                kubectl describe deployment \
-                trend-deployment \
-                -n ${NAMESPACE}
-                """
+                    kubectl describe deployment \
+                        trend-deployment \
+                        -n ${NAMESPACE}
+                    """
+                }
             }
         }
 
         stage('Get LoadBalancer Details') {
             steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-creds']
+                ]) {
 
-                echo "========== LOAD BALANCER DETAILS =========="
+                    echo "========== LOAD BALANCER DETAILS =========="
 
-                sh """
-                sleep 60
+                    sh """
+                    sleep 60
 
-                kubectl get svc \
-                trend-service \
-                -n ${NAMESPACE} \
-                -o wide
+                    kubectl get svc \
+                        trend-service \
+                        -n ${NAMESPACE} \
+                        -o wide
 
-                kubectl describe svc \
-                trend-service \
-                -n ${NAMESPACE}
-                """
+                    kubectl describe svc \
+                        trend-service \
+                        -n ${NAMESPACE}
+                    """
+                }
             }
         }
     }
@@ -219,13 +243,9 @@ pipeline {
 
             sh '''
             docker logout || true
-
             docker rm -f trend-test || true
-
             docker image prune -af || true
-
             docker container prune -f || true
-
             docker volume prune -f || true
             '''
 
@@ -233,7 +253,6 @@ pipeline {
         }
 
         success {
-
             echo "======================================"
             echo "PIPELINE EXECUTED SUCCESSFULLY"
             echo "IMAGE : ${IMAGE}"
@@ -241,7 +260,6 @@ pipeline {
         }
 
         failure {
-
             echo "======================================"
             echo "PIPELINE EXECUTION FAILED"
             echo "======================================"
