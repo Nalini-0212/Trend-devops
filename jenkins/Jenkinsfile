@@ -168,7 +168,7 @@ pipeline {
                      credentialsId: 'aws-creds']
                 ]) {
 
-                    echo "========== UPDATE DEPLOYMENT IMAGE =========="
+                    echo "========== UPDATE DEPLOYMENT IMAGE ==========="
 
                     sh """
                     kubectl set image \
