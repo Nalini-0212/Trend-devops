@@ -108,16 +108,18 @@ pipeline {
 
         stage('Configure EKS') {
             steps {
-
-                echo "========== CONFIGURE KUBECONFIG =========="
-
-                sh """
-                aws eks update-kubeconfig \
-                --region ${AWS_REGION} \
-                --name ${CLUSTER_NAME}
-                """
-            }
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds']]) {
+                        sh """
+                        aws sts get-caller-identity
+                        aws eks update-kubeconfig \
+                        --region ${AWS_REGION} \
+                        --name ${CLUSTER_NAME}
+                        """
         }
+    }
+}
 
         stage('Verify EKS Cluster') {
             steps {
