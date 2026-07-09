@@ -1,0 +1,439 @@
+Started by GitHub push by Nalini-0212
+Obtained jenkins/Jenkinsfile from git https://github.com/Nalini-0212/Trend-devops.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/trend-project
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+The recommended git tool is: git
+No credentials specified
+Cloning the remote Git repository
+Cloning repository https://github.com/Nalini-0212/Trend-devops.git
+ > git init /var/lib/jenkins/workspace/trend-project # timeout=10
+Fetching upstream changes from https://github.com/Nalini-0212/Trend-devops.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.53.0'
+ > git fetch --tags --force --progress -- https://github.com/Nalini-0212/Trend-devops.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url https://github.com/Nalini-0212/Trend-devops.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+Avoid second fetch
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 3dc5daaa54a89aaacfa42bf161533a33b104a249 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 3dc5daaa54a89aaacfa42bf161533a33b104a249 # timeout=10
+Commit message: "modified jenkins file fivth time"
+ > git rev-list --no-walk 5b0481e28d03f7798be07f9016ff5928f5bea651 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout Repository)
+[Pipeline] echo
+========== CHECKOUT REPOSITORY ==========
+[Pipeline] git
+The recommended git tool is: git
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/trend-project/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/Nalini-0212/Trend-devops.git # timeout=10
+Fetching upstream changes from https://github.com/Nalini-0212/Trend-devops.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.53.0'
+ > git fetch --tags --force --progress -- https://github.com/Nalini-0212/Trend-devops.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 3dc5daaa54a89aaacfa42bf161533a33b104a249 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 3dc5daaa54a89aaacfa42bf161533a33b104a249 # timeout=10
+ > git branch -a -v --no-abbrev # timeout=10
+ > git checkout -b main 3dc5daaa54a89aaacfa42bf161533a33b104a249 # timeout=10
+Commit message: "modified jenkins file fivth time"
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Generate Version & Image)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+Version : v1.2
+[Pipeline] echo
+Image   : naliniselv/trend:v1.2
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Docker Login)
+[Pipeline] echo
+========== DOCKER LOGIN ==========
+[Pipeline] withCredentials
+Masking supported pattern matches of $DOCKER_PASSWORD
+[Pipeline] {
+[Pipeline] sh
++ echo ****
++ docker login -u naliniselv --password-stdin
+
+WARNING! Your credentials are stored unencrypted in '/var/lib/jenkins/.docker/config.json'.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/go/credential-store/
+
+Login Succeeded
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build Docker Image)
+[Pipeline] echo
+========== BUILD IMAGE ==========
+[Pipeline] sh
++ docker build -f docker/Dockerfile -t naliniselv/trend:v1.2 .
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 139B done
+#1 DONE 0.0s
+
+#2 [auth] library/nginx:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/nginx:alpine3.23
+#3 DONE 0.2s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 152B done
+#4 DONE 0.0s
+
+#5 [1/2] FROM docker.io/library/nginx:alpine3.23@sha256:54f2a904c251d5a34adf545a72d32515a15e08418dae0266e23be2e18c66fefa
+#5 resolve docker.io/library/nginx:alpine3.23@sha256:54f2a904c251d5a34adf545a72d32515a15e08418dae0266e23be2e18c66fefa 0.1s done
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 9.24MB 0.1s done
+#6 DONE 0.1s
+
+#7 [2/2] COPY app/dist /usr/share/nginx/html
+#7 CACHED
+
+#8 exporting to image
+#8 exporting layers done
+#8 exporting manifest sha256:8793cd85a1d4851b384beb1a52d4bfcc4539c0add5a2c20516ff9097c98bfac8 done
+#8 exporting config sha256:be1aa66c4913e9170b8322383cc400b5d690d808d574931723917d08f11ff125 done
+#8 exporting attestation manifest sha256:b04900e441cd07e162148707f78873f638139eb00d8a614402064d99ce67c11c 0.0s done
+#8 exporting manifest list sha256:5df19031e68d20f82c677b5d2cf1e52f187a5bfd7dd6de99bafd27ded870cde1
+#8 exporting manifest list sha256:5df19031e68d20f82c677b5d2cf1e52f187a5bfd7dd6de99bafd27ded870cde1 0.0s done
+#8 naming to docker.io/naliniselv/trend:v1.2 done
+#8 unpacking to docker.io/naliniselv/trend:v1.2 0.1s done
+#8 DONE 0.3s
+[Pipeline] sh
++ docker tag naliniselv/trend:v1.2 naliniselv/trend:latest
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Validate Application On Port 3000)
+[Pipeline] echo
+========== VALIDATE APPLICATION ==========
+[Pipeline] sh
++ docker run -d --name trend-test -p 3000:80 naliniselv/trend:v1.2
+8098db25f4e3679b63ba7c13a6817ac7eee0dd6020064aad79df765ab1245e6b
++ sleep 20
++ curl -I http://localhost:3000
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+
+  0      0   0      0   0      0      0      0                              0
+  0    415   0      0   0      0      0      0                              0
+  0    415   0      0   0      0      0      0                              0
+  0    415   0      0   0      0      0      0                              0
+HTTP/1.1 200 OK
+Server: nginx/1.31.2
+Date: Wed, 08 Jul 2026 10:59:27 GMT
+Content-Type: text/html
+Content-Length: 415
+Last-Modified: Wed, 08 Jul 2026 10:18:58 GMT
+Connection: keep-alive
+ETag: "6a4e2412-19f"
+Accept-Ranges: bytes
+
++ docker rm -f trend-test
+trend-test
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Push Image To Docker Hub)
+[Pipeline] echo
+========== PUSH IMAGE ==========
+[Pipeline] sh
++ docker push naliniselv/trend:v1.2
+The push refers to repository [docker.io/naliniselv/trend]
+4fcb323bd73d: Waiting
+5b429a43b8df: Layer already exists
+e6f31ffc071e: Layer already exists
+daec4f2e5d4b: Layer already exists
+ab1fd9049751: Layer already exists
+ce42635eeddd: Layer already exists
+01bf363d61e6: Layer already exists
+c75b9c33e8b0: Layer already exists
+c16defe09b2f: Layer already exists
+967885d218c5: Layer already exists
+4fcb323bd73d: Pushed
+v1.2: digest: sha256:5df19031e68d20f82c677b5d2cf1e52f187a5bfd7dd6de99bafd27ded870cde1 size: 856
++ docker push naliniselv/trend:latest
+The push refers to repository [docker.io/naliniselv/trend]
+4fcb323bd73d: Already exists
+daec4f2e5d4b: Layer already exists
+ce42635eeddd: Layer already exists
+01bf363d61e6: Layer already exists
+c75b9c33e8b0: Layer already exists
+e6f31ffc071e: Layer already exists
+c16defe09b2f: Layer already exists
+5b429a43b8df: Layer already exists
+967885d218c5: Layer already exists
+ab1fd9049751: Layer already exists
+latest: digest: sha256:5df19031e68d20f82c677b5d2cf1e52f187a5bfd7dd6de99bafd27ded870cde1 size: 856
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Configure EKS)
+[Pipeline] withCredentials
+Masking supported pattern matches of $AWS_ACCESS_KEY_ID or $AWS_SECRET_ACCESS_KEY
+[Pipeline] {
+[Pipeline] echo
+========== CONFIGURE EKS ==========
+[Pipeline] sh
++ aws sts get-caller-identity
+{
+    "UserId": "AIDAZCOOP46GJOJDIMPKZ",
+    "Account": "623740184460",
+    "Arn": "arn:aws:iam::623740184460:user/terraform"
+}
++ aws eks update-kubeconfig --region ap-south-1 --name trend-cluster
+Added new context arn:aws:eks:ap-south-1:623740184460:cluster/trend-cluster to /var/lib/jenkins/.kube/config
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Verify EKS Cluster)
+[Pipeline] withCredentials
+Masking supported pattern matches of $AWS_ACCESS_KEY_ID or $AWS_SECRET_ACCESS_KEY
+[Pipeline] {
+[Pipeline] echo
+========== VERIFY EKS ==========
+[Pipeline] sh
++ aws sts get-caller-identity
+{
+    "UserId": "AIDAZCOOP46GJOJDIMPKZ",
+    "Account": "623740184460",
+    "Arn": "arn:aws:iam::623740184460:user/terraform"
+}
++ kubectl get nodes
+NAME                                            STATUS   ROLES    AGE    VERSION
+ip-192-168-15-147.ap-south-1.compute.internal   Ready    <none>   4m1s   v1.34.9-eks-7d6f6ec
+ip-192-168-63-119.ap-south-1.compute.internal   Ready    <none>   4m     v1.34.9-eks-7d6f6ec
+ip-192-168-89-211.ap-south-1.compute.internal   Ready    <none>   4m     v1.34.9-eks-7d6f6ec
++ kubectl get namespaces
+NAME              STATUS   AGE
+default           Active   10m
+kube-node-lease   Active   10m
+kube-public       Active   10m
+kube-system       Active   10m
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy Kubernetes Manifests)
+[Pipeline] withCredentials
+Masking supported pattern matches of $AWS_ACCESS_KEY_ID or $AWS_SECRET_ACCESS_KEY
+[Pipeline] {
+[Pipeline] echo
+========== APPLY MANIFESTS ==========
+[Pipeline] sh
++ kubectl apply -f k8s/namespace.yml
+namespace/trend created
++ kubectl apply -f k8s/deployment.yml
+deployment.apps/trend-deployment created
++ kubectl apply -f k8s/service.yml
+service/trend-service created
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy Latest Image)
+[Pipeline] withCredentials
+Masking supported pattern matches of $AWS_ACCESS_KEY_ID or $AWS_SECRET_ACCESS_KEY
+[Pipeline] {
+[Pipeline] echo
+========== UPDATE DEPLOYMENT IMAGE ===========
+[Pipeline] sh
++ kubectl set image deployment/trend-deployment trend-app=naliniselv/trend:v1.2 -n trend
+deployment.apps/trend-deployment image updated
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Verify Deployment)
+[Pipeline] withCredentials
+Masking supported pattern matches of $AWS_ACCESS_KEY_ID or $AWS_SECRET_ACCESS_KEY
+[Pipeline] {
+[Pipeline] echo
+========== VERIFY DEPLOYMENT ============
+[Pipeline] sh
++ kubectl rollout status deployment/trend-deployment -n trend --timeout=5m
+Waiting for deployment "trend-deployment" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "trend-deployment" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "trend-deployment" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "trend-deployment" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "trend-deployment" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "trend-deployment" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "trend-deployment" rollout to finish: 1 old replicas are pending termination...
+deployment "trend-deployment" successfully rolled out
++ kubectl get deployments -n trend
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+trend-deployment   2/2     2            2           18s
++ kubectl get pods -n trend
+NAME                                READY   STATUS    RESTARTS   AGE
+trend-deployment-66999dbf68-krlwv   1/1     Running   0          15s
+trend-deployment-66999dbf68-ktpd2   1/1     Running   0          6s
++ kubectl get svc -n trend
+NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                               PORT(S)          AGE
+trend-service   LoadBalancer   10.100.23.10   a964149113c184893b7e0ac5a158274d-505284856.ap-south-1.elb.amazonaws.com   3000:31425/TCP   19s
++ kubectl describe deployment trend-deployment -n trend
+Name:                   trend-deployment
+Namespace:              trend
+CreationTimestamp:      Wed, 08 Jul 2026 10:59:59 +0000
+Labels:                 app=trend-app
+Annotations:            deployment.kubernetes.io/revision: 2
+Selector:               app=trend-app
+Replicas:               2 desired | 2 updated | 2 total | 2 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=trend-app
+  Containers:
+   trend-app:
+    Image:      naliniselv/trend:v1.2
+    Port:       80/TCP
+    Host Port:  0/TCP
+    Limits:
+      cpu:     500m
+      memory:  128Mi
+    Requests:
+      cpu:         250m
+      memory:      64Mi
+    Environment:   <none>
+    Mounts:        <none>
+  Volumes:         <none>
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  trend-deployment-8986ff4f4 (0/0 replicas created)
+NewReplicaSet:   trend-deployment-66999dbf68 (2/2 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  24s   deployment-controller  Scaled up replica set trend-deployment-8986ff4f4 from 0 to 2
+  Normal  ScalingReplicaSet  19s   deployment-controller  Scaled up replica set trend-deployment-66999dbf68 from 0 to 1
+  Normal  ScalingReplicaSet  10s   deployment-controller  Scaled down replica set trend-deployment-8986ff4f4 from 2 to 1
+  Normal  ScalingReplicaSet  10s   deployment-controller  Scaled up replica set trend-deployment-66999dbf68 from 1 to 2
+  Normal  ScalingReplicaSet  8s    deployment-controller  Scaled down replica set trend-deployment-8986ff4f4 from 1 to 0
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Get LoadBalancer Details)
+[Pipeline] withCredentials
+Masking supported pattern matches of $AWS_ACCESS_KEY_ID or $AWS_SECRET_ACCESS_KEY
+[Pipeline] {
+[Pipeline] echo
+========== LOAD BALANCER DETAILS ==========
+[Pipeline] sh
++ sleep 60
++ kubectl get svc trend-service -n trend -o wide
+NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                               PORT(S)          AGE   SELECTOR
+trend-service   LoadBalancer   10.100.23.10   a964149113c184893b7e0ac5a158274d-505284856.ap-south-1.elb.amazonaws.com   3000:31425/TCP   83s   app=trend-app
++ kubectl describe svc trend-service -n trend
+Name:                     trend-service
+Namespace:                trend
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=trend-app
+Type:                     LoadBalancer
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.100.23.10
+IPs:                      10.100.23.10
+LoadBalancer Ingress:     a964149113c184893b7e0ac5a158274d-505284856.ap-south-1.elb.amazonaws.com
+Port:                     <unset>  3000/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  31425/TCP
+Endpoints:                192.168.31.112:80,192.168.70.89:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Internal Traffic Policy:  Cluster
+Events:
+  Type    Reason                Age   From                Message
+  ----    ------                ----  ----                -------
+  Normal  EnsuringLoadBalancer  86s   service-controller  Ensuring load balancer
+  Normal  EnsuredLoadBalancer   83s   service-controller  Ensured load balancer
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] echo
+========== CLEANUP ==========
+[Pipeline] sh
++ docker logout
+Removing login credentials for https://index.docker.io/v1/
++ docker rm -f trend-test
+Error response from daemon: No such container: trend-test
++ docker image prune -af
+Deleted Images:
+untagged: naliniselv/trend:latest
+untagged: naliniselv/trend:v1.2
+deleted: sha256:5df19031e68d20f82c677b5d2cf1e52f187a5bfd7dd6de99bafd27ded870cde1
+deleted: sha256:8793cd85a1d4851b384beb1a52d4bfcc4539c0add5a2c20516ff9097c98bfac8
+deleted: sha256:b04900e441cd07e162148707f78873f638139eb00d8a614402064d99ce67c11c
+
+Total reclaimed space: 9.435MB
++ docker container prune -f
+Total reclaimed space: 0B
++ docker volume prune -f
+Total reclaimed space: 0B
+[Pipeline] cleanWs
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Deferred wipeout is used...
+[WS-CLEANUP] done
+[Pipeline] echo
+======================================
+[Pipeline] echo
+PIPELINE EXECUTED SUCCESSFULLY
+[Pipeline] echo
+IMAGE : naliniselv/trend:v1.2
+[Pipeline] echo
+======================================
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

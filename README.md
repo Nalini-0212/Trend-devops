@@ -4,11 +4,9 @@
 
 This project demonstrates an end-to-end DevOps implementation for deploying the **Trend** application on AWS using industry-standard DevOps tools and best practices.
 
-The solution includes infrastructure provisioning using Terraform, application containerization with Docker, CI/CD automation using Jenkins, deployment to Amazon EKS, and monitoring using Prometheus and Grafana.
+The solution leverages Infrastructure as Code, Continuous Integration, Continuous Deployment, containerization, Kubernetes orchestration, and monitoring to deliver a production-ready deployment pipeline.
 
----
-
-# Project Highlights
+### Project Highlights
 
 ✅ Infrastructure Provisioning using Terraform
 
@@ -56,16 +54,18 @@ https://hub.docker.com/repository/docker/naliniselv/trend/general
 
 # Prerequisites
 
+The following tools were used for this implementation:
+
 - AWS Account
 - AWS CLI
 - Terraform
 - Docker
+- DockerHub Account
 - Git
 - Jenkins
 - kubectl
 - eksctl
 - Helm
-- DockerHub Account
 
 ---
 
@@ -89,6 +89,10 @@ https://hub.docker.com/repository/docker/naliniselv/trend/general
 
 - Jenkins
 
+## Cloud Platform
+
+- AWS
+
 ## Container Orchestration
 
 - Kubernetes
@@ -98,10 +102,6 @@ https://hub.docker.com/repository/docker/naliniselv/trend/general
 
 - Prometheus
 - Grafana
-
-## Cloud Platform
-
-- AWS
 
 ---
 
@@ -125,16 +125,16 @@ Jenkins Pipeline
    └── Verify Deployment
                │
                ▼
-         Amazon EKS
+          Amazon EKS
                │
                ▼
-         Kubernetes Service
+      Kubernetes Service
                │
                ▼
-         AWS LoadBalancer
+        AWS LoadBalancer
                │
                ▼
-          Trend Application
+         Trend Application
 
 Monitoring
    ├── Prometheus
@@ -148,16 +148,16 @@ Monitoring
 1. Provision AWS infrastructure using Terraform.
 2. Automatically install Jenkins on EC2 using User Data.
 3. Configure GitHub repository and Jenkins integration.
-4. Trigger Jenkins build using GitHub Webhooks.
+4. Trigger Jenkins builds using GitHub Webhooks.
 5. Build Docker image through Jenkins.
-6. Validate application locally.
-7. Push image to DockerHub.
+6. Validate application accessibility.
+7. Push Docker image to DockerHub.
 8. Configure EKS cluster access.
-9. Deploy Kubernetes resources.
-10. Update deployment with latest image.
+9. Deploy Kubernetes manifests.
+10. Update deployment with the latest image.
 11. Verify rollout status.
 12. Expose application using AWS LoadBalancer.
-13. Monitor infrastructure and application health using Prometheus and Grafana.
+13. Monitor cluster and application health using Prometheus and Grafana.
 
 ---
 
@@ -183,7 +183,6 @@ TREND
 │   ├── deployment.yml
 │   └── service.yml
 │
-│
 ├── screenshots/
 │
 ├── terraform/
@@ -201,7 +200,7 @@ TREND
 
 # Infrastructure Provisioning using Terraform
 
-Terraform was used to create and manage AWS infrastructure.
+Terraform was used to provision and manage AWS infrastructure.
 
 ## Resources Created
 
@@ -215,7 +214,7 @@ Terraform was used to create and manage AWS infrastructure.
 
 ### Security
 
-Security Group allowing:
+Security Group configured for:
 
 - SSH (22)
 - HTTP (80)
@@ -240,7 +239,7 @@ Security Group allowing:
 
 ## provider.tf
 
-Configures AWS Provider.
+Configures the AWS Provider.
 
 ## variable.tf
 
@@ -257,7 +256,7 @@ Contains:
 Creates:
 
 - VPC
-- Subnet
+- Public Subnet
 - Internet Gateway
 - Route Table
 - Security Group
@@ -267,7 +266,7 @@ Creates:
 
 ## output.tf
 
-Displays Jenkins Public IP.
+Displays Jenkins EC2 Public IP.
 
 ```hcl
 output "instance_public_ip" {
@@ -314,12 +313,13 @@ terraform output
 
 # Jenkins Setup
 
-Jenkins was installed automatically on the EC2 instance using Terraform User Data.
+Jenkins was installed automatically using Terraform User Data.
 
 Access Jenkins:
 
-http://<JENKINS_PUBLIC_IP>:8080
-
+```text
+http://<EC2-PUBLIC-IP>:8080
+```
 
 ## Plugins Installed
 
@@ -369,7 +369,7 @@ curl -I http://localhost:3000
 
 # DockerHub
 
-Docker images are stored in DockerHub.
+Docker images are stored and versioned in DockerHub.
 
 Repository:
 
@@ -387,20 +387,136 @@ docker push naliniselv/trend:latest
 
 # Version Control
 
-GitHub repository:
+GitHub was used as the source code repository and integrated with Jenkins CI/CD.
+
+Repository:
 
 ```text
 https://github.com/Nalini-0212/Trend-devops.git
 ```
 
-Push Changes:
+---
+
+# Git Ignore Configuration
+
+The `.gitignore` file was added to prevent unnecessary and sensitive files from being committed.
+
+## .gitignore
+
+```text
+*.swp
+*.log
+*.tmp
+
+coverage/
+
+.vscode/
+.idea/
+
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+.env
+
+workspace/
+
+*.secret.yaml
+
+*.bak
+```
+
+### Excluded Files
+
+- Terraform state files
+- Terraform variable files
+- Environment files
+- Jenkins workspace files
+- IDE configuration files
+- Temporary files
+- Kubernetes secret files
+
+---
+
+# Docker Ignore Configuration
+
+The `.dockerignore` file was added to reduce Docker build context and optimize image creation.
+
+## .dockerignore
+
+```text
+.git
+.gitignore
+
+README.md
+
+terraform/
+k8s/
+jenkins/
+docs/
+screenshots/
+
+.vscode/
+.idea/
+
+*.log
+.env
+```
+
+### Excluded Files
+
+- Git metadata
+- Documentation
+- Terraform files
+- Kubernetes manifests
+- Jenkins pipeline files
+- Screenshots
+- IDE files
+- Log files
+- Environment files
+
+---
+
+# Git Commands Used
+
+Initialize Repository:
+
+```bash
+git init
+```
+
+Check Status:
+
+```bash
+git status
+```
+
+Stage Files:
 
 ```bash
 git add .
+```
 
-git commit -m "Updated DevOps Project"
+Commit Changes:
 
-git push origin main
+```bash
+git commit -m "Initial DevOps Implementation"
+```
+
+Add Remote Repository:
+
+```bash
+git remote add origin \
+https://github.com/Nalini-0212/Trend-devops.git
+```
+
+Push Code:
+
+```bash
+git branch -M main
+
+git push -u origin main
 ```
 
 ---
@@ -420,7 +536,7 @@ Verify Cluster:
 kubectl get nodes
 ```
 
-Expected:
+Expected Status:
 
 ```text
 Ready
@@ -448,7 +564,7 @@ trend-deployment
 - Image: naliniselv/trend:latest
 - Container Port: 80
 
-Deploy:
+Deploy Resources:
 
 ```bash
 kubectl apply -f k8s/namespace.yml
@@ -503,22 +619,22 @@ kubectl get svc -n trend
 
 # Jenkins CI/CD Pipeline
 
-A Jenkins Declarative Pipeline was implemented to automate application deployment.
+A Jenkins Declarative Pipeline was implemented to automate deployment.
 
-## Pipeline Flow
+## Pipeline Stages
 
-1. Checkout source code from GitHub
-2. Generate Docker image version
-3. DockerHub authentication
-4. Build Docker image
-5. Validate application locally
-6. Push image to DockerHub
-7. Configure Amazon EKS access
-8. Verify EKS cluster
-9. Deploy Kubernetes manifests
-10. Update deployment image
-11. Verify rollout status
-12. Retrieve LoadBalancer information
+1. Checkout Repository
+2. Generate Version
+3. Docker Login
+4. Build Docker Image
+5. Validate Application
+6. Push Docker Image
+7. Configure EKS
+8. Verify EKS Cluster
+9. Deploy Kubernetes Resources
+10. Deploy Latest Image
+11. Verify Deployment
+12. Retrieve LoadBalancer Details
 
 ## Deployment Verification
 
@@ -530,22 +646,13 @@ kubectl rollout status deployment/trend-deployment -n trend
 
 # Application Deployment
 
-The application was successfully deployed to Amazon EKS and exposed using a Kubernetes LoadBalancer Service.
+The application was successfully deployed to Amazon EKS and exposed through a Kubernetes LoadBalancer Service.
 
 ## Application URL
 
 ```text
 http://a964149113c184893b7e0ac5a158274d-505284856.ap-south-1.elb.amazonaws.com
 ```
-
-## Deployment Verification
-
-```bash
-kubectl get svc -n trend
-```
-
-The application was validated successfully through the external LoadBalancer endpoint.
-
 
 ## EKS Service Verification
 
@@ -556,10 +663,11 @@ kubectl get svc -n trend
 Sample Output:
 
 ```text
-NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                               PORT(S)          AGE   SELECTOR
-trend-service   LoadBalancer   10.100.23.10   a964149113c184893b7e0ac5a158274d-505284856.ap-south-1.elb.amazonaws.com   3000:31425/TCP   83s   app=trend-app
+NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                               PORT(S)
+trend-service   LoadBalancer   10.100.23.10   a964149113c184893b7e0ac5a158274d-505284856.ap-south-1.elb.amazonaws.com   3000:31425/TCP
 ```
 
+The AWS LoadBalancer successfully exposed the application for external access.
 
 ---
 
@@ -575,9 +683,7 @@ An open-source monitoring solution was implemented using Prometheus and Grafana.
 - kube-state-metrics
 - Node Exporter
 
----
-
-# Monitoring Installation
+## Monitoring Installation
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -603,8 +709,8 @@ Prometheus and Grafana were exposed externally using Kubernetes LoadBalancer Ser
 Prometheus was configured to collect:
 
 - Kubernetes Metrics
-- Node Metrics
 - Cluster Metrics
+- Node Metrics
 - Pod Metrics
 
 Validation:
@@ -621,28 +727,28 @@ Verified Targets:
 - kube-state-metrics
 - prometheus
 
-All targets were healthy and reporting as UP.
+All targets were healthy and reporting **UP**.
 
 ---
 
 # Grafana Monitoring
 
-Grafana dashboards were used to visualize cluster and application metrics.
+Grafana dashboards were configured and validated.
 
-Validated Dashboards:
+## Dashboards Verified
 
 - Kubernetes Cluster Dashboard
 - Node Dashboard
 - Pod Dashboard
 
-Metrics Observed:
+## Metrics Observed
 
 - CPU Utilization
 - Memory Utilization
 - Running Pods
 - Deployment Status
-- Cluster Health
 - Node Health
+- Cluster Health
 
 ---
 
@@ -657,7 +763,7 @@ Monitored Metrics:
 - Running Pods
 - Cluster Status
 
-Validation:
+Validation Commands:
 
 ```bash
 kubectl get nodes
@@ -679,7 +785,7 @@ Monitored Metrics:
 - Application Availability
 - Service Availability
 
-Validation:
+Validation Commands:
 
 ```bash
 kubectl get deployments -n trend
@@ -693,7 +799,7 @@ kubectl get svc -n trend
 
 # Documentation
 
-A detailed deployment guide is available at:
+Detailed implementation documentation is available at:
 
 ```text
 docs/Application_Deployment.docx
@@ -701,7 +807,6 @@ docs/Application_Deployment.docx
 
 Contents:
 
-- Architecture Diagram
 - Terraform Setup
 - Jenkins Configuration
 - Docker Implementation
@@ -716,6 +821,12 @@ Contents:
 ---
 
 # Screenshots Included
+
+All screenshots are available under:
+
+```text
+screenshots/
+```
 
 ## Terraform
 
@@ -770,7 +881,7 @@ Contents:
 
 # Results
 
-✅ Infrastructure Provisioned using Terraform
+✅ AWS Infrastructure Provisioned using Terraform
 
 ✅ Jenkins Installed and Configured
 
@@ -784,13 +895,31 @@ Contents:
 
 ✅ Application Exposed through AWS LoadBalancer
 
+✅ .gitignore and .dockerignore Implemented
+
+✅ Source Code Successfully Pushed to GitHub Using Git CLI Commands
+
 ✅ Prometheus Monitoring Implemented
 
 ✅ Grafana Dashboards Configured
 
-✅ Cluster and Application Health Monitoring Enabled
+✅ Cluster Health Monitoring Enabled
 
-✅ Complete Documentation and Screenshots Included
+✅ Application Health Monitoring Enabled
+
+✅ Complete Documentation Included
+
+✅ Screenshots and Validation Evidence Attached
+
+---
+
+# Conclusion
+
+This project successfully demonstrates a complete DevOps implementation for deploying a production-ready application on AWS.
+
+The solution integrates Infrastructure as Code using Terraform, Docker containerization, Jenkins CI/CD automation, Amazon EKS, Kubernetes LoadBalancer services, and Prometheus-Grafana monitoring.
+
+The automated deployment pipeline enables reliable application delivery from source control to production while providing real-time visibility into cluster and application health.
 
 ---
 
